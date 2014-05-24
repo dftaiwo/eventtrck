@@ -1,2 +1,2 @@
 <?php
-    echo 'Hello world! @ '.date('h:i:sa');
+    echo 'Hello User! @ '.date('h:i:sa');
