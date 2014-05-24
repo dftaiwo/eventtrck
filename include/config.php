@@ -9,3 +9,10 @@ $google_api_config = [
 
 ini_set('include_path', ini_get('include_path') . PATH_SEPARATOR . './lib' . PATH_SEPARATOR.'./lib/google-api-php-client/src' . PATH_SEPARATOR.'./include' . PATH_SEPARATOR);
 	
+
+
+function pr($data){
+	echo '<pre>';
+	print_r($data);
+	echo '</pre>';
+}

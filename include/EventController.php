@@ -9,9 +9,10 @@ require_once('BaseController.php');
 class EventsController extends BaseController{
 	
 	public $currentAction;
-	
-	function _construct(){
+	public $Event;
+	function __construct(){
 		require_once('include/EventModel.php');
+		$this->Event = new EventModel();
 	}
 	
 	function handleRequest(){
@@ -47,20 +48,21 @@ class EventsController extends BaseController{
 
 	
 	function listEvents(){
+		
+		
+		pr($this->Event->findEvents());
+		
 		$this->loadTemplate('events_list');
 	}
 	
 	function createEvent(){
 		
-		$ev = new EventModel();
-		$ev->setName('Sample Event')->setDescription('Sample Description');
-		$ev->setEventDate('2014-05-24 12:00:00');
-		$ev->setVenue("Co-Creation Hub, Sabo Yaba");
-		$ev->put();
-		
+		$this->Event->setName('Sample Event');
+		$this->Event->setDescription('Sample Description');
+		$this->Event->setEventDate('2014-05-24 12:00:00');
+		$this->Event->setVenue("Co-Creation Hub, Sabo Yaba");
+		$this->Event->put();
 		
 	}
-	
-	
 	
 }

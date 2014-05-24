@@ -101,8 +101,23 @@ class EventModel extends Model {
 		
 	}
 
-	public function findEvents() {
+	protected static function extractQueryResults($results) {
+		$query_results = [];
+		foreach ($results as $result) {
+			$id = @$result['entity']['key']['path'][0]['id'];
+			$key_name = @$result['entity']['key']['path'][0]['name'];
+			$props = $result['entity']['properties'];
+			foreach($props as $propKey=>$propValue){
+				$row[$propKey] = $propValue->getStringValue();
+			}
+			$query_results[] = $row;
+		}
 		
+		return $query_results;
+	}
+
+	public function findEvents() {
+		return $this->all();
 	}
 
 }
