@@ -1,5 +1,5 @@
 application: eventtrck
-version: 1
+version: 2
 runtime: php
 api_version: 1
 threadsafe: yes
