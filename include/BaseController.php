@@ -2,90 +2,97 @@
 
 /**
  */
-
 class BaseController {
 
-    public $listLimit = 15;
-   
-    public $basePath = '';
-    public $currentUrl = '';
-    
-    public $devLog = array();
-	 
-    public $previousUrl = '/';
-	 
-    function sRead($key, $defaultValue = NULL) {
-        if( !isset($_SESSION)|| !$_SESSION) return $defaultValue;
-        if (!array_key_exists($key, $_SESSION)) {
+	public $listLimit = 15;
+	public $basePath = '';
+	public $currentUrl = '';
+	public $devLog = array();
+	public $previousUrl = '/';
 
-            return $defaultValue;
-        }
-        return $_SESSION[$key];
-    }
+	function sRead($key, $defaultValue = NULL) {
+		if (!isset($_SESSION) || !$_SESSION)
+			return $defaultValue;
+		if (!array_key_exists($key, $_SESSION)) {
 
-    function sWrite($key, $value) {
-        $_SESSION[$key] = $value;
-    }
+			return $defaultValue;
+		}
+		return $_SESSION[$key];
+	}
 
-    function setFlash($message, $messageType) {
-        $this->sWrite('flash_message', array('message' => $message, 'messageType' => $messageType));
-    }
+	function sWrite($key, $value) {
+		$_SESSION[$key] = $value;
+	}
 
-    function readFlash() {
+	function setFlash($message, $messageType) {
+		$this->sWrite('flash_message', array('message' => $message, 'messageType' => $messageType));
+	}
 
-        $flashMessage = $this->sRead('flash_message');
-        return $flashMessage;
-    }
+	function readFlash() {
 
-    function redirect($toUrl, $message = '', $messageType = 1) {
-        $this->setFlash($message, $messageType);
-        if (!$toUrl) {
-            $toUrl = '/';
-        }
+		$flashMessage = $this->sRead('flash_message');
+		return $flashMessage;
+	}
 
-        header("location: $toUrl");
-        if (!$message)
-            $message = 'Click here to continue';
-        echo "<a href='$toUrl'>$message</a>";
-        exit;
-    }
+	function redirect($toUrl, $message = '', $messageType = 1) {
+		$this->setFlash($message, $messageType);
+		if (!$toUrl) {
+			$toUrl = '/';
+		}
 
-    function loadTemplate($templateName, $viewVariables = array()) {
-        foreach ($viewVariables as $field => $value) {
-            $$field = $value;
-        }
+		header("location: $toUrl");
+		if (!$message)
+			$message = 'Click here to continue';
+		echo "<a href='$toUrl'>$message</a>";
+		exit;
+	}
 
-        $fullPath = "template/{$templateName}.php";
+	function loadTemplate($templateName, $viewVariables = array()) {
+		foreach ($viewVariables as $field => $value) {
+			$$field = $value;
+		}
 
-        if (!file_exists($fullPath)) {
-            echo "<span class='appError'>Unable to locate requested template <u>{$templateName}</u></span>";
-            return;
-        }
+		$fullPath = "template/{$templateName}.php";
 
-        include($fullPath);
-    }
- 
+		if (!file_exists($fullPath)) {
+			echo "<span class='appError'>Unable to locate requested template <u>{$templateName}</u></span>";
+			return;
+		}
 
-    function url($relUrl) {
-        if(stripos($relUrl,'http')===0) return $relUrl;
-        return $this->getBasePath() . $relUrl;
-    }
-    
-    
-    function _now() {
-        return date("Y-m-d H:i:s");
-    }
+		include($fullPath);
+	}
 
-    public function getBasePath() {
-        return $this->basePath;
-    }
+	function url($relUrl) {
+		if (stripos($relUrl, 'http') === 0)
+			return $relUrl;
+		return $this->getBasePath() . $relUrl;
+	}
 
-    public function getCurrentUrl() {
-        return $this->currentUrl;
-    }
+	function loadHeader() {
+		
+		$flashMessage = $this->readFlash();
+		
+		$this->loadTemplate('header', compact('flashMessage'));
+	}
 
-    function _url($url) {
-        return $this->basePath . $url;
-    }
+	function loadFooter() {
+		$this->loadTemplate('footer');
+	}
+
+	function _now() {
+		return date("Y-m-d H:i:s");
+	}
+
+	public function getBasePath() {
+		return $this->basePath;
+	}
+
+	public function getCurrentUrl() {
+		return $this->currentUrl;
+	}
+
+	function _url($url) {
+		return $this->basePath . $url;
+	}
 
 }

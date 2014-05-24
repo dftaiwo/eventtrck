@@ -14,13 +14,15 @@ class EventModel extends Model {
 	const EVENT_DESCRIPTION = 'description';
 	const EVENT_DATE = 'event_date';
 	const EVENT_VENUE = 'venue';
+	const EVENT_CREATED = 'created';
 
 	private
 			  $eventId,
 			  $name,
 			  $description,
 			  $eventDate,
-			  $venue;
+			  $venue,
+			  $created;
 
 	public function __construct() {
 		parent::__construct();
@@ -32,10 +34,12 @@ class EventModel extends Model {
 
 	protected function getKindProperties() {
 		$property_map = array(
+				  self::EVENT_ID => parent::createStringProperty($this->getEventId(), true),
 				  self::EVENT_NAME => parent::createStringProperty($this->getName(), true),
 				  self::EVENT_DESCRIPTION => parent::createStringProperty($this->getDescription(), true),
 				  self::EVENT_DATE => parent::createStringProperty($this->getEventDate(), false),
 				  self::EVENT_VENUE => parent::createStringProperty($this->getVenue(), false),
+				  self::EVENT_CREATED => parent::createStringProperty($this->getCreated(), false),
 		);
 		return $property_map;
 	}
@@ -107,17 +111,26 @@ class EventModel extends Model {
 			$id = @$result['entity']['key']['path'][0]['id'];
 			$key_name = @$result['entity']['key']['path'][0]['name'];
 			$props = $result['entity']['properties'];
-			foreach($props as $propKey=>$propValue){
+			foreach ($props as $propKey => $propValue) {
 				$row[$propKey] = $propValue->getStringValue();
 			}
 			$query_results[] = $row;
 		}
-		
+
 		return $query_results;
 	}
 
 	public function findEvents() {
 		return $this->all();
+	}
+
+	public function getCreated() {
+		return $this->created;
+	}
+
+	public function setCreated($created) {
+		$this->created = $created;
+		return $this;
 	}
 
 }

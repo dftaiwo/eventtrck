@@ -36,32 +36,34 @@ class EventsController extends BaseController{
 		call_user_func_array(array($this, $requestedAction), $passedArgs);
 		
 	}
-	
-	function loadHeader() {
-		
-		$this->loadTemplate('header');
-	}
-
-	function loadFooter() {
-		$this->loadTemplate('footer');
-	}
 
 	
 	function listEvents(){
 		
+		$events = $this->Event->findEvents();
 		
-		pr($this->Event->findEvents());
+		$this->loadTemplate('events_list',compact('events'));
+	}
+	
+	function viewEvent($eventId=0){
 		
-		$this->loadTemplate('events_list');
 	}
 	
 	function createEvent(){
+		$this->loadTemplate('create_event');
 		
-		$this->Event->setName('Sample Event');
-		$this->Event->setDescription('Sample Description');
-		$this->Event->setEventDate('2014-05-24 12:00:00');
-		$this->Event->setVenue("Co-Creation Hub, Sabo Yaba");
+		if(!$_POST){
+			return;
+		}
+		
+		$this->Event->setEventId(uniqid('evt'));
+		$this->Event->setName($_POST['event_name']);
+		$this->Event->setDescription($_POST['description']);
+		$this->Event->setEventDate($_POST['event_date']);
+		$this->Event->setVenue($_POST['venue']);
+		$this->Event->setCreated($this->_now());
 		$this->Event->put();
+		$this->redirect('listEvents','Event Saved');
 		
 	}
 	
