@@ -4,6 +4,7 @@
  */
 
 require_once("views/RendererEngineFactory.php");
+require_once("validation/ValidationServiceProvider.php");
 class BaseController {
 
 	public $listLimit = 15;

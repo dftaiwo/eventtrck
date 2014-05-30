@@ -36,21 +36,35 @@ class EventsController extends BaseController{
 	}
 	
 	function createEvent(){
-		$this->loadTemplate('create_event.php', array(), false);
+		if(strtolower($_SERVER['REQUEST_METHOD']) == 'post'){
+            $validatorService = ValidationServiceProvider::getValidatorService();
 
-		if(!$_POST){
-			return;
+            $validation_result = $validatorService->getValidator('required')
+                ->validateAgainst('event_name')
+                ->validateAgainst('description')
+                ->validateAgainst('event_date')
+                ->validateAgainst('venue')
+                ->validate($_POST);
+
+            if($validation_result->isValid()){
+                $cleaned = $validation_result->getCleanedData();
+                pr($cleaned);
+                $this->Event->setEventId(uniqid('evt'));
+                $this->Event->setName($_POST['event_name']);
+                $this->Event->setDescription($_POST['description']);
+                $this->Event->setEventDate($_POST['event_date']);
+                $this->Event->setVenue($_POST['venue']);
+                $this->Event->setCreated($this->_now());
+                $this->Event->put();
+                //$this->redirect('listEvents','Event Saved');
+                return;
+            }
+            else{
+                pr($validation_result->getErrors());
+            }
 		}
-		
-		$this->Event->setEventId(uniqid('evt'));
-		$this->Event->setName($_POST['event_name']);
-		$this->Event->setDescription($_POST['description']);
-		$this->Event->setEventDate($_POST['event_date']);
-		$this->Event->setVenue($_POST['venue']);
-		$this->Event->setCreated($this->_now());
-		$this->Event->put();
-		$this->redirect('listEvents','Event Saved');
-		
+
+        $this->loadTemplate('create_event.php', array(), false);
 	}
 	
 }
