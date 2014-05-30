@@ -10,39 +10,25 @@ class EventsController extends BaseController{
 	
 	public $currentAction;
 	public $Event;
+
 	function __construct(){
+        parent::__contruct();
 		require_once('include/EventModel.php');
 		$this->Event = new EventModel();
 	}
-	
-	function handleRequest(){
-		
-		if (!isset($_SERVER['REQUEST_URI'])) {
-			$_SERVER['REQUEST_URI'] = '/';
-		}
-		
-		$args = substr($_SERVER['REQUEST_URI'], 1);
-		
-		$passedArgs = explode('/', $args);
-		
-		$requestedAction = array_shift($passedArgs);
-		
-		if(!$requestedAction) $requestedAction = 'listEvents';
-		if (substr($requestedAction, 0, 1) == '_') {
-			//Don't even dignify this with a response becuase this is an internal function
-			exit;
-		}
-		 
-		call_user_func_array(array($this, $requestedAction), $passedArgs);
-		
-	}
+
+    /**
+     * comment by kembene
+     *
+     *  I feel its better to move handleRequest method (which was formally here) to the base controller class so as to
+     *  lessen the burden on sub-controllers in terms of routing. Let sub controllers focus on their business logic
+     */
 
 	
 	function listEvents(){
 		
 		$events = $this->Event->findEvents();
-		
-		$this->loadTemplate('events_list',compact('events'));
+		return $this->loadTemplate('events_list.php',compact('events'), true);
 	}
 	
 	function viewEvent($eventId=0){
@@ -50,8 +36,8 @@ class EventsController extends BaseController{
 	}
 	
 	function createEvent(){
-		$this->loadTemplate('create_event');
-		
+		$this->loadTemplate('create_event.php', array(), false);
+
 		if(!$_POST){
 			return;
 		}

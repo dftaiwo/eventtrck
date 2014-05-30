@@ -2,6 +2,8 @@
 
 /**
  */
+
+require_once("views/RendererEngineFactory.php");
 class BaseController {
 
 	public $listLimit = 15;
@@ -9,6 +11,15 @@ class BaseController {
 	public $currentUrl = '';
 	public $devLog = array();
 	public $previousUrl = '/';
+
+    /**
+     * @var BaseRenderingEngine null
+     */
+    public $rendererEngine = null;
+
+    public function __contruct(){
+        $this->rendererEngine = RendererEngineFactory::getRenderingEngine();
+    }
 
 	function sRead($key, $defaultValue = NULL) {
 		if (!isset($_SESSION) || !$_SESSION)
@@ -47,8 +58,11 @@ class BaseController {
 		exit;
 	}
 
-	function loadTemplate($templateName, $viewVariables = array()) {
-		foreach ($viewVariables as $field => $value) {
+	function loadTemplate($templateName, $viewVariables = array(), $buffer=false) {
+        //its better if we delegate this task of rendering to another service
+        return $this->rendererEngine->render($templateName, $viewVariables, $buffer);
+
+		/*foreach ($viewVariables as $field => $value) {
 			$$field = $value;
 		}
 
@@ -59,8 +73,42 @@ class BaseController {
 			return;
 		}
 
-		include($fullPath);
+		include($fullPath);*/
 	}
+
+
+    function handleRequest(){
+        if (!isset($_SERVER['REQUEST_URI'])) {
+            $_SERVER['REQUEST_URI'] = '/';
+        }
+
+        $args = substr($_SERVER['REQUEST_URI'], 1);
+
+        $passedArgs = explode('/', $args);
+
+        $requestedAction = array_shift($passedArgs);
+
+        if(!$requestedAction) $requestedAction = 'listEvents';
+        if (substr($requestedAction, 0, 1) == '_') {
+            //Don't even dignify this with a response becuase this is an internal function
+            exit;
+        }
+
+        $result = call_user_func_array(array($this, $requestedAction), $passedArgs);
+
+        if(is_array($result)){
+            $template = array_shift($result);
+            $variables = count($result) > 0 ? array_shift($result) : array();
+            $result = $this->loadTemplate($template, $variables);
+            if($result){
+                echo $result;
+            }
+        }
+        if(is_string($result)){
+            echo $result;
+        }
+
+    }
 
 	function url($relUrl) {
 		if (stripos($relUrl, 'http') === 0)
@@ -72,11 +120,11 @@ class BaseController {
 		
 		$flashMessage = $this->readFlash();
 		
-		$this->loadTemplate('header', compact('flashMessage'));
+		$this->loadTemplate('header.php', compact('flashMessage'));
 	}
 
 	function loadFooter() {
-		$this->loadTemplate('footer');
+		$this->loadTemplate('footer.php');
 	}
 
 	function _now() {
