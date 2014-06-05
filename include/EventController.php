@@ -37,32 +37,79 @@ class EventsController extends BaseController{
 	
 	function createEvent(){
 		if(strtolower($_SERVER['REQUEST_METHOD']) == 'post'){
-            $validatorService = ValidationServiceProvider::getValidatorService();
+            /*$validatorService = ValidationServiceProvider::getValidationService();
 
-            $validation_result = $validatorService->getValidator('required')
-                ->validateAgainst('event_name')
+            $validator = $validatorService->getValidator('required')
+                //->validateAgainst('event_name')
+                //->addErrorMessageArgument(0, 'Event Name')
+
                 ->validateAgainst('description')
+                ->addErrorMessageArgument(0, 'Description')
+
+                //->getValidator('length')
+                //->validateAgainst('event_name')
+                ->withField('event_name')
+                ->validateUsing('required')
+                ->addErrorMessageArgument(0, 'Event Name')
+
+                ->validateUsing('length')
+                ->addErrorMessageArgument(0, 'Event Name')
+                //->addValidationContextData('min', 5)
+                ->addValidationContextData('max', 7)
+
+                ->getValidator('required')
                 ->validateAgainst('event_date')
+                ->addErrorMessageArgument(0, 'Event date')
+
                 ->validateAgainst('venue')
-                ->validate($_POST);
+                ->addErrorMessageArgument(0, 'Venue');
+
+            //pr(ValidationServiceProvider::getValidationService());*/
+
+            $validationQuery = ValidationUtility::createValidationQuery();
+
+            $validationQuery
+                ->withField('event_name')
+                    ->validateUsing('required')
+                        ->addErrorMessageArgument(0, 'Event Name')
+                    ->validateUsing('length')
+                        ->addValidationContextData('min', 5)
+                        ->addErrorMessageArgument(0, 'Event Name')
+
+                ->withValidator('required')
+                    ->validateAgainst('event_date')
+                        ->addErrorMessageArgument(0, 'Event Date')
+                    ->validateAgainst('venue')
+                        ->addErrorMessageArgument(0, 'Venue')
+                    ->validateAgainst('description')
+                        ->addErrorMessageArgument(0, 'Description');
+
+            $validation_result = $validationQuery->validate($_POST);
 
             if($validation_result->isValid()){
                 $cleaned = $validation_result->getCleanedData();
-                pr($cleaned);
                 $this->Event->setEventId(uniqid('evt'));
-                $this->Event->setName($_POST['event_name']);
-                $this->Event->setDescription($_POST['description']);
-                $this->Event->setEventDate($_POST['event_date']);
-                $this->Event->setVenue($_POST['venue']);
+                $this->Event->setName($cleaned['event_name']);
+                $this->Event->setDescription($cleaned['description']);
+                $this->Event->setEventDate($cleaned['event_date']);
+                $this->Event->setVenue($cleaned['venue']);
                 $this->Event->setCreated($this->_now());
                 $this->Event->put();
-                //$this->redirect('listEvents','Event Saved');
+                $this->redirect('listEvents','Event Saved');
                 return;
             }
             else{
-                pr($validation_result->getErrors());
+                $error_list = $validation_result->getErrors();
+                foreach($error_list as $errors){
+                    foreach($errors as $error){
+                        pr($error);
+                    }
+                }
             }
 		}
+        /*$context = new ValidationContext(array(), '{0} is required', array('0'=>'Username'));
+        var_dump(ValidationErrorMessageTranslator::translateErrorMessage(ValidationServiceProvider::
+            getValidationService()->getValidator('required'), $context, '23'));*/
 
         $this->loadTemplate('create_event.php', array(), false);
 	}

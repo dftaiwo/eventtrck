@@ -4,41 +4,12 @@ class Validator {
 
     private $name;
 
-    public function clean($value){
-        return $value;
-    }
-
-    public function doValidate($value, $context){
-        return true;
-    }
-
-
-    public function getValidator($validator){
-        return ValidationServiceProvider::getValidatorService()->getValidator($validator);
-    }
-
-    public function validateAgainst($field, $context = array()){
-        ValidationServiceProvider::getValidatorService()->registerValidation($this->getName(), $field, $context);
-        return $this;
-    }
-
-    /**
-     * @param $items_to_validate
-     * @return ValidationResult
-     */
-    public function validate($items_to_validate){
-        return ValidationServiceProvider::getValidatorService()->validate($items_to_validate);
-    }
-
-    /**
-     * @param mixed $name
-     */
-    public function setName($name)
-    {
+    function __construct($name){
         $this->name = $name;
     }
 
     /**
+     * returns the name this validator was registered with
      * @return mixed
      */
     public function getName()
@@ -46,6 +17,67 @@ class Validator {
         return $this->name;
     }
 
+    /**
+     * @param $value
+     * @return mixed
+     */
+    public function clean($value){
+        return $value;
+    }
 
+    /**
+     * @param $value
+     * @param $context ValidationContext
+     * @return mixed
+     */
+    protected function doValidate($value, $context=null){
+        return true;
+    }
 
-} 
+    /**
+     * @param $value
+     * @param $context ValidationContext
+     */
+    protected function preValidate($value, $context=null){
+
+    }
+
+    /**
+     * @param $value
+     * @param $context ValidationContext
+     */
+    protected function postValidate($value, $context=null){
+
+    }
+
+    /**
+     * @param $value
+     * @param $field
+     * @param $context ValidationContext
+     * @return mixed
+     */
+    public final function performValidation($value, $field, $context=null){
+        $this->preValidate($value, $context);
+        $callback = $context->getPreValidationCallback();
+        if($callback){
+            $temp = call_user_func($callback, array($field, $value, $context));
+            if($temp){
+                $context = $temp;
+            }
+        }
+
+        $result = $this->doValidate($value, $context);
+        $this->postValidate($value, $context);
+        return $result;
+    }
+
+    /**
+     * returns the default error message format that will be used to generate the error message that is displayed to the
+     *  user. An error message format can contain numeric placeholders wrapped in curly braces. This allows arguments
+     * @param $context ValidationContext
+     * @return string
+     */
+    public function getDefaultErrorMessage($context){
+        return '';
+    }
+}
